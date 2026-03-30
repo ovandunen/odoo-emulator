@@ -1,0 +1,15 @@
+quarkus:
+  http:
+    port: 8069
+  log:
+    level: INFO
+    category:
+      "solutions.envision":
+        level: DEBUG
+
+odoo:
+  emulator:
+    # Pre-seeded API key accepted by the emulator (your app uses this)
+    api-key: "emulator-api-key-dev-only"
+    # When set to true, new API keys can be registered via /web/session/authenticate
+    allow-dynamic-auth: true
