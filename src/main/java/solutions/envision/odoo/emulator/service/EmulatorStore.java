@@ -187,13 +187,14 @@ public class EmulatorStore {
         OdooPartner p1 = new OdooPartner();
         p1.setId(1); p1.setName("Acme Recruiting GmbH");
         p1.setEmail("contact@acme-recruiting.de"); p1.setPhone("+49 30 123456");
-        p1.setIsCompany(true); p1.setActive(true);
+        p1.setCompany(true);
+        p1.setActive(true);
         partners.put(1, p1);
 
         OdooPartner p2 = new OdooPartner();
         p2.setId(2); p2.setName("Talent Solutions AG");
         p2.setEmail("info@talent-solutions.ch"); p2.setPhone("+41 44 987654");
-        p2.setIsCompany(true); p2.setActive(true);
+        p2.setCompany(true); p2.setActive(true);
         partners.put(2, p2);
 
         // Seed invoice

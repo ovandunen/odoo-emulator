@@ -195,7 +195,7 @@ public class JsonRpcResource {
         p.setStreet(str(v.get("street")));
         p.setCity(str(v.get("city")));
         p.setZip(str(v.get("zip")));
-        if (v.containsKey("is_company")) p.setIsCompany(Boolean.parseBoolean(str(v.get("is_company"))));
+        if (v.containsKey("is_company")) p.setCompany(Boolean.parseBoolean(str(v.get("is_company"))));
         return p;
     }
 

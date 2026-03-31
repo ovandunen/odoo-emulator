@@ -1,0 +1,29 @@
+quarkus:
+  http:
+    port: 8069
+  log:
+    level: INFO
+    category:
+      "solutions.envision":
+        level: DEBUG
+
+odoo:
+  emulator:
+    api-key: "emulator-api-key-dev-only"
+    allow-dynamic-auth: true
+    target-webhook-url: "http://localhost:8080/api/odoo/webhook"
+
+"%dev":
+  quarkus:
+    http:
+      port: 8069
+
+"%test":
+  quarkus:
+    http:
+      port: 8069
+
+"%prod":
+  quarkus:
+    http:
+      port: 8069
