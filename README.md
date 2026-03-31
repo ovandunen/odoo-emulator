@@ -244,3 +244,16 @@ GET http://localhost:8069/emulator/state/attachments
 | Partner | 2 | Talent Solutions AG |
 | Invoice | 101 | Posted invoice, €149, partner 1 |
 | Transaction | 201 | Done (paid), references invoice 101 |
+
+
+## running postgres in docker first time
+docker run --name odoo-postgres \
+  -e POSTGRES_DB=${POSTGRES_DB} \
+  -e POSTGRES_USER=${POSTGRES_USER} \
+  -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+  -p 5432:5432 \
+  -d postgres:latest
+
+docker start odoo-postgres 
+
+

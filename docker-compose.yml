@@ -5,6 +5,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: odoo-emulator
+    depends_on:
+        postgres:
+          condition: service_healthy
     ports:
       - "8069:8069"
     environment:
@@ -20,7 +23,7 @@ services:
       retries: 3
 
   postgres:
-    image: postgres:16
+    image: postgres:18
     container_name: odoo-postgres
     ports:
       - "5432:5432"
@@ -29,7 +32,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - odoo_postgres_data:/var/lib/postgresql/data
+      - odoo_postgres_data:/var/lib/postgresql
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d odoo_payments"]
