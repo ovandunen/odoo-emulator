@@ -1,86 +1,41 @@
-version: "3.9"
+# =============================================================================
+# Multi-stage Dockerfile for Odoo Emulator (Quarkus)
+# =============================================================================
+# Build:  docker build -t odoo-emulator .
+# Run:    docker run -p 8069:8069 odoo-emulator
+#
+# Override DB at runtime:
+#   docker run -p 8069:8069 -e DB_URL=jdbc:postgresql://host.docker.internal:5432/odoo_payments odoo-emulator
+# =============================================================================
 
-services:
 
-  odoo-emulator:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: odoo-emulator
-    ports:
-      - "8069:8069"
-    environment:
-      QUARKUS_HTTP_PORT: 8069
-      ODOO_EMULATOR_API_KEY: "emulator-api-key-dev-only"
-      ODOO_EMULATOR_TARGET_WEBHOOK_URL: "http://host.docker.internal:8080/api/odoo/webhook"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8069/emulator/info",
-             "-H", "Authorization: Bearer emulator-api-key-dev-only"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+# Use JDK instead of JRE for development tools
+FROM eclipse-temurin:21-jdk-alpine
 
-  postgres:
-    image: postgres:latest
-    container_name: odoo-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: odoo_payments
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - odoo_postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d odoo_payments"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+WORKDIR /app
 
-volumes:
-  odoo_postgres_data:
- version: "3.9"
+# Create non-root user (optional, but kept for consistency)
+RUN addgroup -g 1000 app && adduser -u 1000 -G app -s /bin/sh -D app
 
-services:
+# Copy Maven wrapper files first for layer caching
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-  odoo-emulator:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: odoo-emulator
-    ports:
-      - "8069:8069"
-    environment:
-      QUARKUS_HTTP_PORT: 8069
-      ODOO_EMULATOR_API_KEY: "emulator-api-key-dev-only"
-      ODOO_EMULATOR_TARGET_WEBHOOK_URL: "http://host.docker.internal:8080/api/odoo/webhook"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8069/emulator/info",
-             "-H", "Authorization: Bearer emulator-api-key-dev-only"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+# Download dependencies to cache them in the image layer
+RUN ./mvnw dependency:go-offline -B
 
-  postgres:
-    image: postgres:16
-    container_name: odoo-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: odoo_payments
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - odoo_postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d odoo_payments"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+# Copy the source code [cite: 3, 4]
+COPY src src
 
-volumes:
-  odoo_postgres_data:
+# Fix permissions for the app user
+RUN chown -R app:app /app && chmod +x mvnw
+
+USER app
+
+# Expose HTTP port and Debug port
+EXPOSE 8069 5005
+
+# Run in dev mode. 
+# -Dquarkus.http.host=0.0.0.0 is critical for container accessibility.
+CMD ["./mvnw", "quarkus:dev", "-Dquarkus.http.host=0.0.0.0", "-Dquarkus.http.port=8069"]
