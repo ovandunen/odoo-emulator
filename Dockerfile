@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+
+  odoo-emulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: odoo-emulator
+    ports:
+      - "8069:8069"
+    environment:
+      QUARKUS_HTTP_PORT: 8069
+      ODOO_EMULATOR_API_KEY: "emulator-api-key-dev-only"
+      ODOO_EMULATOR_TARGET_WEBHOOK_URL: "http://host.docker.internal:8080/api/odoo/webhook"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/emulator/info",
+             "-H", "Authorization: Bearer emulator-api-key-dev-only"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:latest
+    container_name: odoo-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: odoo_payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - odoo_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d odoo_payments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  odoo_postgres_data:
+ version: "3.9"
+
+services:
+
+  odoo-emulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: odoo-emulator
+    ports:
+      - "8069:8069"
+    environment:
+      QUARKUS_HTTP_PORT: 8069
+      ODOO_EMULATOR_API_KEY: "emulator-api-key-dev-only"
+      ODOO_EMULATOR_TARGET_WEBHOOK_URL: "http://host.docker.internal:8080/api/odoo/webhook"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/emulator/info",
+             "-H", "Authorization: Bearer emulator-api-key-dev-only"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:16
+    container_name: odoo-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: odoo_payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - odoo_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d odoo_payments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  odoo_postgres_data:
